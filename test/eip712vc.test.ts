@@ -6,9 +6,8 @@ import {
   EIP712VerifiableCredential,
   DEFAULT_CONTEXT,
   EIP712_CONTEXT,
-  DEFAULT_VC_TYPE
+  DEFAULT_VC_TYPE,
 } from '../src/eip712vc'
-
 
 describe('attest', () => {
   let eip712vc: EIP712VC
@@ -34,16 +33,16 @@ describe('attest', () => {
 
     let credentialSubjectTypes = {
       CredentialSubject: [
-        { name: "id", type: "string" },
-        { name: "ethereumAddress", type: "address" },
-        { name: "_type", type: "string" },
-        { name: "value", type: "string" },
-        { name: "encrypted", type: "string" },
-        { name: "trust", type: "uint8" },
-        { name: "stake", type: "uint256" },
-        { name: "nbf", type: "uint256" },
-        { name: "exp", type: "uint256" },
-      ]
+        { name: 'id', type: 'string' },
+        { name: 'ethereumAddress', type: 'address' },
+        { name: '_type', type: 'string' },
+        { name: 'value', type: 'string' },
+        { name: 'encrypted', type: 'string' },
+        { name: 'trust', type: 'uint8' },
+        { name: 'stake', type: 'uint256' },
+        { name: 'nbf', type: 'uint256' },
+        { name: 'exp', type: 'uint256' },
+      ],
     }
 
     let credential = {
@@ -55,12 +54,11 @@ describe('attest', () => {
         ethereumAddress: 'acc1',
       },
       credentialSubject: {
-        id: "did:user",
+        id: 'did:user',
         ethereumAddress: 'acc1',
-        _type: "fullName",
-        value: "encrypted",
-        encrypted:
-          "0x0c94bf56745f8d3d9d49b77b345c780a0c11ea997229f925f39a1946d51856fb",
+        _type: 'fullName',
+        value: 'encrypted',
+        encrypted: '0x0c94bf56745f8d3d9d49b77b345c780a0c11ea997229f925f39a1946d51856fb',
         trust: 50,
         stake: 6,
         nbf: Math.floor(issuanceDate / 1000),
@@ -72,7 +70,6 @@ describe('attest', () => {
       },
       issuanceDate: new Date(issuanceDate).toISOString(),
       expirationDate: new Date(expirationDate).toISOString(),
-      
     }
 
     //console.log(credential)
@@ -84,7 +81,7 @@ describe('attest', () => {
 
     const vc: EIP712VerifiableCredential = eip712vc.createEIP712VerifiableCredential(
       wallet._signingKey().privateKey,
-      credentialTypedData,
+      credentialTypedData
     )
 
     //console.log(vc)

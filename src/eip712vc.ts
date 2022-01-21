@@ -48,7 +48,6 @@ export const EIP712_CONTEXT =
   'https://raw.githubusercontent.com/w3c-ccg/ethereum-eip712-signature-2021-spec/main/contexts/v1/index.json'
 export const DEFAULT_VC_TYPE = 'VerifiableCredential'
 
-
 export class EIP712VC {
   private eip712Config: EIP712Config
 
@@ -94,16 +93,16 @@ export class EIP712VC {
    */
   public createW3CVerifiableCredential(
     privateKey: string,
-    credentialTypedData: W3CCredentialTypedData,
+    credentialTypedData: W3CCredentialTypedData
   ): VerifiableCredential {
     let data: TypedMessage<EIP712MessageTypes> = credentialTypedData
 
     let signature = signTypedData_v4(Buffer.from(privateKey.slice(2), 'hex'), { data })
 
-    let credential : W3CCredential = {...credentialTypedData.message};
+    let credential: W3CCredential = { ...credentialTypedData.message }
 
     let proof: Proof = {
-      verificationMethod: credentialTypedData.message.issuer.id+"#ethereumAddress",
+      verificationMethod: credentialTypedData.message.issuer.id + '#ethereumAddress',
       ethereumAddress: credentialTypedData.message.issuer.ethereumAddress,
       created: new Date(Date.now()).toISOString(),
       proofPurpose: 'assertionMethod',
@@ -155,8 +154,6 @@ export class EIP712VC {
     return getAddress(issuer) === getAddress(recoveredAddress)
   }
 
-
-
   /**
    * Creates a VerifiableCredential given a `EIP712CredentialTypedData`
    *
@@ -169,18 +166,18 @@ export class EIP712VC {
    * @return a `Promise` that resolves to the verifiable credential or rejects with `TypeError` if the
    * `payload` is not W3C compliant
    */
-   public createEIP712VerifiableCredential(
+  public createEIP712VerifiableCredential(
     privateKey: string,
-    credentialTypedData: EIP712CredentialTypedData,
+    credentialTypedData: EIP712CredentialTypedData
   ): EIP712VerifiableCredential {
     let data: TypedMessage<EIP712MessageTypes> = credentialTypedData
 
     let signature = signTypedData_v4(Buffer.from(privateKey.slice(2), 'hex'), { data })
 
-    let credential : EIP712Credential = {...credentialTypedData.message};
+    let credential: EIP712Credential = { ...credentialTypedData.message }
 
     let proof: Proof = {
-      verificationMethod: credentialTypedData.message.issuer.id+"#ethereumAddress",
+      verificationMethod: credentialTypedData.message.issuer.id + '#ethereumAddress',
       ethereumAddress: credentialTypedData.message.issuer.ethereumAddress,
       created: new Date(Date.now()).toISOString(),
       proofPurpose: 'assertionMethod',
@@ -222,7 +219,11 @@ export class EIP712VC {
     }
   }
 
-  public verifyEIP712Credential(issuer: string, credentialTypedData: EIP712CredentialTypedData, proofValue: string): boolean {
+  public verifyEIP712Credential(
+    issuer: string,
+    credentialTypedData: EIP712CredentialTypedData,
+    proofValue: string
+  ): boolean {
     let data: TypedMessage<EIP712MessageTypes> = credentialTypedData
     const recoveredAddress = recoverTypedSignature_v4({
       data,
@@ -231,5 +232,4 @@ export class EIP712VC {
 
     return getAddress(issuer) === getAddress(recoveredAddress)
   }
-
 }

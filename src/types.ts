@@ -1,10 +1,6 @@
+import { W3CCredential } from 'did-jwt-vc'
 
-import {
-  W3CCredential,
-} from 'did-jwt-vc'
-
-export const DOMAIN_ENCODING = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-
+export const DOMAIN_ENCODING = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
 
 export interface EIP712Config {
   name: string
@@ -64,7 +60,6 @@ export interface EIP712TypedData<T extends EIP712MessageTypes> {
 
 export const VERIFIABLE_CREDENTIAL_PRIMARY_TYPE = 'VerifiableCredential'
 
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Extensible<T> = T & { [x: string]: any }
 export type IssuerType = Extensible<{ id: string }>
@@ -76,17 +71,17 @@ export interface CredentialSchema {
 }
 
 export type EIP712CredentialPayload = {
-  _context: string;
-  _type: string;
-  id: string;
+  _context: string
+  _type: string
+  id: string
   issuer: IssuerType
   credentialSubject: Extensible<{
     id?: string
-  }>;
-  credentialSchema?: CredentialSchema;
-  issuanceDate: DateType;
-  expirationDate?: DateType;
-};
+  }>
+  credentialSchema?: CredentialSchema
+  issuanceDate: DateType
+  expirationDate?: DateType
+}
 
 export type EIP712Credential = Extensible<EIP712CredentialPayload>
 
@@ -129,7 +124,7 @@ export const VERIFIABLE_CREDENTIAL_EIP712_TYPE: TypedData[] = [
   { name: 'credentialSubject', type: 'CredentialSubject' },
   { name: 'credentialSchema', type: 'CredentialSchema' },
   { name: 'issuanceDate', type: 'string' },
-  { name: 'expirationDate', type: 'string' }
+  { name: 'expirationDate', type: 'string' },
 ]
 
 export const PROOF_EIP712_TYPE: TypedData[] = [
@@ -139,7 +134,6 @@ export const PROOF_EIP712_TYPE: TypedData[] = [
   { name: 'proofPurpose', type: 'string' },
   { name: '_type', type: 'string' },
 ]
-
 
 export interface W3CCredentialMessageTypes extends EIP712MessageTypes {
   VerifiableCredential: typeof VERIFIABLE_CREDENTIAL_W3C_TYPE
@@ -177,6 +171,3 @@ export const PROOF_W3C_TYPE: TypedData[] = [
   { name: 'proofPurpose', type: 'string' },
   { name: 'type', type: 'string' },
 ]
-
-
-
