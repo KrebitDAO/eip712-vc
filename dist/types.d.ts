@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { W3CCredential } from 'did-jwt-vc';
 export declare const DOMAIN_ENCODING = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 export interface EIP712Config {
@@ -7,11 +6,7 @@ export interface EIP712Config {
     chainId: number;
     verifyingContract: string;
 }
-export declare type Signature = {
-    v: number;
-    r: Buffer;
-    s: Buffer;
-};
+export declare type Signature = string;
 export interface TypedData {
     name: string;
     type: 'bool' | 'uint8' | 'uint16' | 'uint32' | 'uint64' | 'uint128' | 'uint256' | 'address' | 'string' | 'string[]' | 'bytes' | 'bytes32' | 'Issuer' | 'CredentialSubject' | 'CredentialSchema' | 'Proof';
@@ -96,4 +91,5 @@ export interface W3CCredentialTypedData extends EIP712TypedData<W3CCredentialMes
 export declare const CREDENTIAL_SCHEMA_W3C_TYPE: TypedData[];
 export declare const VERIFIABLE_CREDENTIAL_W3C_TYPE: TypedData[];
 export declare const PROOF_W3C_TYPE: TypedData[];
+export declare type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>;
 export {};

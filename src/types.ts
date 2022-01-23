@@ -9,7 +9,7 @@ export interface EIP712Config {
   verifyingContract: string
 }
 
-export type Signature = { v: number; r: Buffer; s: Buffer }
+export type Signature = string
 
 export interface TypedData {
   name: string
@@ -171,3 +171,5 @@ export const PROOF_W3C_TYPE: TypedData[] = [
   { name: 'proofPurpose', type: 'string' },
   { name: 'type', type: 'string' },
 ]
+
+export type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>

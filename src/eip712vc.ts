@@ -2,7 +2,7 @@ import { utils } from 'ethers'
 
 const { keccak256, getAddress, toUtf8Bytes, defaultAbiCoder } = utils
 
-import { TypedMessage, recoverTypedSignature_v4, signTypedData_v4 } from 'eth-sig-util'
+import { TypedMessage, recoverTypedSignature_v4 } from 'eth-sig-util'
 
 import {
   DOMAIN_ENCODING,
@@ -20,6 +20,8 @@ import {
   EIP712Credential,
   EIP712VerifiableCredential,
   W3CCredentialTypedData,
+  SignTypedData,
+  EIP712TypedData,
 } from './types'
 
 import {
@@ -34,6 +36,9 @@ import { Proof } from 'did-jwt-vc/lib/types'
 
 export {
   EIP712Config,
+  EIP712MessageTypes,
+  EIP712CredentialTypedData,
+  EIP712TypedData,
   CredentialPayload,
   PresentationPayload,
   VerifiableCredential,
@@ -47,6 +52,28 @@ export const DEFAULT_CONTEXT = 'https://www.w3.org/2018/credentials/v1'
 export const EIP712_CONTEXT =
   'https://raw.githubusercontent.com/w3c-ccg/ethereum-eip712-signature-2021-spec/main/contexts/v1/index.json'
 export const DEFAULT_VC_TYPE = 'VerifiableCredential'
+
+export function getKrebitCredentialTypes(): any {
+  return {
+    VerifiableCredential: VERIFIABLE_CREDENTIAL_EIP712_TYPE,
+    CredentialSchema: CREDENTIAL_SCHEMA_EIP712_TYPE,
+    CredentialSubject: [
+      { name: 'id', type: 'string' },
+      { name: 'ethereumAddress', type: 'address' },
+      { name: '_type', type: 'string' },
+      { name: 'value', type: 'string' },
+      { name: 'encrypted', type: 'string' },
+      { name: 'trust', type: 'uint8' },
+      { name: 'stake', type: 'uint256' },
+      { name: 'nbf', type: 'uint256' },
+      { name: 'exp', type: 'uint256' },
+    ],
+    Issuer: [
+      { name: 'id', type: 'string' },
+      { name: 'ethereumAddress', type: 'address' },
+    ],
+  }
+}
 
 export class EIP712VC {
   private eip712Config: EIP712Config
@@ -79,27 +106,14 @@ export class EIP712VC {
     }
   }
 
-  /**
-   * Creates a VerifiableCredential given a `EIP712CredentialTypedData`
-   *
-   * This method transforms the payload into the [EIP712 Typed Data](https://eips.ethereum.org/EIPS/eip-712)
-   * described in the [W3C EIP712 VC spec](https://w3c-ccg.github.io/ethereum-eip712-signature-2021-spec) and then validated to conform to the minimum spec
-   * required W3C spec.
-   *
-   * @param privateKey `Issuer` the DID, signer and algorithm that will sign the token
-   * @param credentialTypedData `EIP712CredentialTypedData`
-   * @return a `Promise` that resolves to the verifiable credential or rejects with `TypeError` if the
-   * `payload` is not W3C compliant
-   */
-  public createW3CVerifiableCredential(
-    privateKey: string,
-    credentialTypedData: W3CCredentialTypedData
-  ): VerifiableCredential {
-    let data: TypedMessage<EIP712MessageTypes> = credentialTypedData
+  public async createW3CVerifiableCredential(
+    credential: W3CCredential,
+    credentialSubjectTypes: any,
+    signTypedData: SignTypedData<EIP712MessageTypes>
+  ): Promise<VerifiableCredential> {
+    const credentialTypedData = this.getW3CCredentialTypedData(credential, credentialSubjectTypes)
 
-    let signature = signTypedData_v4(Buffer.from(privateKey.slice(2), 'hex'), { data })
-
-    let credential: W3CCredential = { ...credentialTypedData.message }
+    let signature = await signTypedData(credentialTypedData)
 
     let proof: Proof = {
       verificationMethod: credentialTypedData.message.issuer.id + '#ethereumAddress',
@@ -110,9 +124,9 @@ export class EIP712VC {
       ...credentialTypedData.message.proof,
       proofValue: signature,
       eip712: {
-        domain: { ...data.domain },
-        types: { ...data.types },
-        primaryType: data.primaryType,
+        domain: { ...credentialTypedData.domain },
+        types: { ...credentialTypedData.types },
+        primaryType: credentialTypedData.primaryType,
       },
     }
 
@@ -124,11 +138,7 @@ export class EIP712VC {
     return verifiableCredential
   }
 
-  public getW3CCredentialTypedData(
-    credential: W3CCredential,
-    issuerType: any,
-    credentialSubjectTypes: any
-  ): W3CCredentialTypedData {
+  public getW3CCredentialTypedData(credential: W3CCredential, credentialSubjectTypes: any): W3CCredentialTypedData {
     return {
       domain: this.getDomainTypedData(),
       primaryType: VERIFIABLE_CREDENTIAL_PRIMARY_TYPE,
@@ -138,14 +148,17 @@ export class EIP712VC {
         VerifiableCredential: VERIFIABLE_CREDENTIAL_W3C_TYPE,
         CredentialSchema: CREDENTIAL_SCHEMA_W3C_TYPE,
         ...credentialSubjectTypes,
-        Issuer: issuerType,
-        //Proof: PROOF_EIP712_TYPE,
       },
     }
   }
 
-  public verifyW3CCredential(issuer: string, credentialTypedData: W3CCredentialTypedData, proofValue: string): boolean {
-    let data: TypedMessage<EIP712MessageTypes> = credentialTypedData
+  public verifyW3CCredential(
+    issuer: string,
+    credential: W3CCredential,
+    credentialSubjectTypes: any,
+    proofValue: string
+  ): boolean {
+    let data: TypedMessage<EIP712MessageTypes> = this.getW3CCredentialTypedData(credential, credentialSubjectTypes)
     const recoveredAddress = recoverTypedSignature_v4({
       data,
       sig: proofValue,
@@ -161,20 +174,19 @@ export class EIP712VC {
    * described in the [W3C EIP712 VC spec](https://w3c-ccg.github.io/ethereum-eip712-signature-2021-spec) and then validated to conform to the minimum spec
    * required W3C spec.
    *
-   * @param privateKey `Issuer` the DID, signer and algorithm that will sign the token
+   * @param signTypedData `Issuer` the DID, signer and algorithm that will sign the token
    * @param credentialTypedData `EIP712CredentialTypedData`
    * @return a `Promise` that resolves to the verifiable credential or rejects with `TypeError` if the
    * `payload` is not W3C compliant
    */
-  public createEIP712VerifiableCredential(
-    privateKey: string,
-    credentialTypedData: EIP712CredentialTypedData
-  ): EIP712VerifiableCredential {
-    let data: TypedMessage<EIP712MessageTypes> = credentialTypedData
+  public async createEIP712VerifiableCredential(
+    credential: EIP712Credential,
+    credentialSubjectTypes: any,
+    signTypedData: SignTypedData<EIP712MessageTypes>
+  ): Promise<EIP712VerifiableCredential> {
+    const credentialTypedData = this.getEIP712CredentialTypedData(credential, credentialSubjectTypes)
 
-    let signature = signTypedData_v4(Buffer.from(privateKey.slice(2), 'hex'), { data })
-
-    let credential: EIP712Credential = { ...credentialTypedData.message }
+    let signature = await signTypedData(credentialTypedData)
 
     let proof: Proof = {
       verificationMethod: credentialTypedData.message.issuer.id + '#ethereumAddress',
@@ -185,9 +197,9 @@ export class EIP712VC {
       ...credentialTypedData.message.proof,
       proofValue: signature,
       eip712: {
-        domain: { ...data.domain },
-        types: { ...data.types },
-        primaryType: data.primaryType,
+        domain: { ...credentialTypedData.domain },
+        types: { ...credentialTypedData.types },
+        primaryType: credentialTypedData.primaryType,
       },
     }
 
@@ -199,9 +211,16 @@ export class EIP712VC {
     return verifiableCredential
   }
 
+  public getEIP712CredentialTypes(credentialSubjectTypes: any): EIP712CredentialTypedData {
+    return {
+      VerifiableCredential: VERIFIABLE_CREDENTIAL_EIP712_TYPE,
+      CredentialSchema: CREDENTIAL_SCHEMA_EIP712_TYPE,
+      ...credentialSubjectTypes,
+    }
+  }
+
   public getEIP712CredentialTypedData(
     credential: EIP712Credential,
-    issuerType: any,
     credentialSubjectTypes: any
   ): EIP712CredentialTypedData {
     return {
@@ -213,18 +232,18 @@ export class EIP712VC {
         VerifiableCredential: VERIFIABLE_CREDENTIAL_EIP712_TYPE,
         CredentialSchema: CREDENTIAL_SCHEMA_EIP712_TYPE,
         ...credentialSubjectTypes,
-        Issuer: issuerType,
-        //Proof: PROOF_EIP712_TYPE,
       },
     }
   }
 
   public verifyEIP712Credential(
     issuer: string,
-    credentialTypedData: EIP712CredentialTypedData,
+    credential: EIP712Credential,
+    credentialSubjectTypes: any,
     proofValue: string
   ): boolean {
-    let data: TypedMessage<EIP712MessageTypes> = credentialTypedData
+    let data: TypedMessage<EIP712MessageTypes> = this.getEIP712CredentialTypedData(credential, credentialSubjectTypes)
+
     const recoveredAddress = recoverTypedSignature_v4({
       data,
       sig: proofValue,
