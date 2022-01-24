@@ -17,6 +17,7 @@ function getKrebitCredentialTypes() {
             { name: 'id', type: 'string' },
             { name: 'ethereumAddress', type: 'address' },
             { name: '_type', type: 'string' },
+            { name: 'typeSchema', type: 'string' },
             { name: 'value', type: 'string' },
             { name: 'encrypted', type: 'string' },
             { name: 'trust', type: 'uint8' },
