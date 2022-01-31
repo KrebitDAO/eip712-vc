@@ -1,5 +1,3 @@
-import { W3CCredential } from 'did-jwt-vc'
-
 export const DOMAIN_ENCODING = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
 
 export interface EIP712Config {
@@ -65,6 +63,65 @@ type Extensible<T> = T & { [x: string]: any }
 export type IssuerType = Extensible<{ id: string }>
 export type DateType = string | Date
 
+export interface CredentialStatus {
+  id: string
+  type: string
+}
+
+/**
+ * used as input when creating Verifiable Credentials
+ */
+interface FixedCredentialPayload {
+  '@context': string | string[]
+  id?: string
+  type: string | string[]
+  issuer: IssuerType
+  issuanceDate: DateType
+  expirationDate?: DateType
+  credentialSubject: Extensible<{
+    id?: string
+  }>
+  credentialStatus?: CredentialStatus
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  evidence?: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  termsOfUse?: any
+}
+
+/**
+ * A more flexible representation of a {@link W3CCredential} that can be used as input to methods
+ * that expect it.
+ */
+export type CredentialPayload = Extensible<FixedCredentialPayload>
+
+/**
+ * This is meant to reflect unambiguous types for the properties in `CredentialPayload`
+ */
+interface NarrowCredentialDefinitions {
+  '@context': string[]
+  type: string[]
+  issuer: Exclude<IssuerType, string>
+  issuanceDate: string
+  expirationDate?: string
+}
+
+/**
+ * Replaces the matching property types of T with the ones in U
+ */
+type Replace<T, U> = Omit<T, keyof U> & U
+
+/**
+ * This data type represents a parsed VerifiableCredential.
+ * It is meant to be an unambiguous representation of the properties of a Credential and is usually the result of a transformation method.
+ *
+ * `issuer` is always an object with an `id` property and potentially other app specific issuer claims
+ * `issuanceDate` is an ISO DateTime string
+ * `expirationDate`, is a nullable ISO DateTime string
+ *
+ * Any JWT specific properties are transformed to the broader W3C variant and any app specific properties are left intact
+ */
+export type W3CCredential = Extensible<Replace<FixedCredentialPayload, NarrowCredentialDefinitions>>
+
 export interface CredentialSchema {
   id: string
   _type: string
@@ -98,6 +155,8 @@ export interface Proof {
 export type Verifiable<T> = Readonly<T> & { readonly proof: Proof }
 
 export type EIP712VerifiableCredential = Verifiable<EIP712Credential>
+
+export type VerifiableCredential = Verifiable<W3CCredential>
 
 export interface EIP712CredentialMessageTypes extends EIP712MessageTypes {
   VerifiableCredential: typeof VERIFIABLE_CREDENTIAL_EIP712_TYPE
@@ -173,3 +232,7 @@ export const PROOF_W3C_TYPE: TypedData[] = [
 ]
 
 export type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>
+export type VerifyTypedData<T extends EIP712MessageTypes> = (
+  data: EIP712TypedData<T>,
+  proofValue: string
+) => Promise<string>

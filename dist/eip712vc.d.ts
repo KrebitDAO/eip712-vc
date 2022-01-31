@@ -1,6 +1,5 @@
-import { EIP712Config, EIP712DomainTypedData, EIP712CredentialTypedData, EIP712MessageTypes, EIP712Credential, EIP712VerifiableCredential, W3CCredentialTypedData, SignTypedData, EIP712TypedData } from './types';
-import { CredentialPayload, PresentationPayload, VerifiableCredential, W3CCredential, W3CPresentation, Verifiable } from 'did-jwt-vc';
-export { EIP712Config, EIP712MessageTypes, EIP712CredentialTypedData, EIP712TypedData, CredentialPayload, PresentationPayload, VerifiableCredential, EIP712VerifiableCredential, Verifiable, W3CCredential, W3CPresentation, };
+import { EIP712Config, EIP712DomainTypedData, W3CCredential, CredentialPayload, VerifiableCredential, EIP712CredentialTypedData, EIP712MessageTypes, EIP712Credential, EIP712VerifiableCredential, W3CCredentialTypedData, SignTypedData, VerifyTypedData, EIP712TypedData } from './types';
+export { EIP712Config, EIP712MessageTypes, EIP712CredentialTypedData, EIP712TypedData, CredentialPayload, VerifiableCredential, EIP712VerifiableCredential, W3CCredential, W3CCredentialTypedData, SignTypedData, VerifyTypedData, };
 export declare const DEFAULT_CONTEXT = "https://www.w3.org/2018/credentials/v1";
 export declare const EIP712_CONTEXT = "https://raw.githubusercontent.com/w3c-ccg/ethereum-eip712-signature-2021-spec/main/contexts/v1/index.json";
 export declare const DEFAULT_VC_TYPE = "VerifiableCredential";
@@ -12,7 +11,7 @@ export declare class EIP712VC {
     getDomainTypedData(): EIP712DomainTypedData;
     createW3CVerifiableCredential(credential: W3CCredential, credentialSubjectTypes: any, signTypedData: SignTypedData<EIP712MessageTypes>): Promise<VerifiableCredential>;
     getW3CCredentialTypedData(credential: W3CCredential, credentialSubjectTypes: any): W3CCredentialTypedData;
-    verifyW3CCredential(issuer: string, credential: W3CCredential, credentialSubjectTypes: any, proofValue: string): boolean;
+    verifyW3CCredential(issuer: string, credential: W3CCredential, credentialSubjectTypes: any, proofValue: string, verifyTypedData: VerifyTypedData<EIP712MessageTypes>): Promise<boolean>;
     /**
      * Creates a VerifiableCredential given a `EIP712CredentialTypedData`
      *
@@ -28,5 +27,5 @@ export declare class EIP712VC {
     createEIP712VerifiableCredential(credential: EIP712Credential, credentialSubjectTypes: any, signTypedData: SignTypedData<EIP712MessageTypes>): Promise<EIP712VerifiableCredential>;
     getEIP712CredentialTypes(credentialSubjectTypes: any): EIP712CredentialTypedData;
     getEIP712CredentialTypedData(credential: EIP712Credential, credentialSubjectTypes: any): EIP712CredentialTypedData;
-    verifyEIP712Credential(issuer: string, credential: EIP712Credential, credentialSubjectTypes: any, proofValue: string): boolean;
+    verifyEIP712Credential(issuer: string, credential: EIP712Credential, credentialSubjectTypes: any, proofValue: string, verifyTypedData: VerifyTypedData<EIP712MessageTypes>): Promise<boolean>;
 }

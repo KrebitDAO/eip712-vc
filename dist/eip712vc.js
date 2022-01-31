@@ -4,7 +4,6 @@ exports.EIP712VC = exports.getKrebitCredentialTypes = exports.DEFAULT_VC_TYPE = 
 var tslib_1 = require("tslib");
 var ethers_1 = require("ethers");
 var keccak256 = ethers_1.utils.keccak256, getAddress = ethers_1.utils.getAddress, toUtf8Bytes = ethers_1.utils.toUtf8Bytes, defaultAbiCoder = ethers_1.utils.defaultAbiCoder;
-var eth_sig_util_1 = require("eth-sig-util");
 var types_1 = require("./types");
 exports.DEFAULT_CONTEXT = 'https://www.w3.org/2018/credentials/v1';
 exports.EIP712_CONTEXT = 'https://raw.githubusercontent.com/w3c-ccg/ethereum-eip712-signature-2021-spec/main/contexts/v1/index.json';
@@ -82,13 +81,20 @@ var EIP712VC = /** @class */ (function () {
             types: (0, tslib_1.__assign)({ EIP712Domain: types_1.DOMAIN_TYPE, VerifiableCredential: types_1.VERIFIABLE_CREDENTIAL_W3C_TYPE, CredentialSchema: types_1.CREDENTIAL_SCHEMA_W3C_TYPE }, credentialSubjectTypes),
         };
     };
-    EIP712VC.prototype.verifyW3CCredential = function (issuer, credential, credentialSubjectTypes, proofValue) {
-        var data = this.getW3CCredentialTypedData(credential, credentialSubjectTypes);
-        var recoveredAddress = (0, eth_sig_util_1.recoverTypedSignature_v4)({
-            data: data,
-            sig: proofValue,
+    EIP712VC.prototype.verifyW3CCredential = function (issuer, credential, credentialSubjectTypes, proofValue, verifyTypedData) {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+            var data, recoveredAddress;
+            return (0, tslib_1.__generator)(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        data = this.getW3CCredentialTypedData(credential, credentialSubjectTypes);
+                        return [4 /*yield*/, verifyTypedData(data, proofValue)];
+                    case 1:
+                        recoveredAddress = _a.sent();
+                        return [2 /*return*/, getAddress(issuer) === getAddress(recoveredAddress)];
+                }
+            });
         });
-        return getAddress(issuer) === getAddress(recoveredAddress);
     };
     /**
      * Creates a VerifiableCredential given a `EIP712CredentialTypedData`
@@ -134,13 +140,20 @@ var EIP712VC = /** @class */ (function () {
             types: (0, tslib_1.__assign)({ EIP712Domain: types_1.DOMAIN_TYPE, VerifiableCredential: types_1.VERIFIABLE_CREDENTIAL_EIP712_TYPE, CredentialSchema: types_1.CREDENTIAL_SCHEMA_EIP712_TYPE }, credentialSubjectTypes),
         };
     };
-    EIP712VC.prototype.verifyEIP712Credential = function (issuer, credential, credentialSubjectTypes, proofValue) {
-        var data = this.getEIP712CredentialTypedData(credential, credentialSubjectTypes);
-        var recoveredAddress = (0, eth_sig_util_1.recoverTypedSignature_v4)({
-            data: data,
-            sig: proofValue,
+    EIP712VC.prototype.verifyEIP712Credential = function (issuer, credential, credentialSubjectTypes, proofValue, verifyTypedData) {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+            var data, recoveredAddress;
+            return (0, tslib_1.__generator)(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        data = this.getEIP712CredentialTypedData(credential, credentialSubjectTypes);
+                        return [4 /*yield*/, verifyTypedData(data, proofValue)];
+                    case 1:
+                        recoveredAddress = _a.sent();
+                        return [2 /*return*/, getAddress(issuer) === getAddress(recoveredAddress)];
+                }
+            });
         });
-        return getAddress(issuer) === getAddress(recoveredAddress);
     };
     return EIP712VC;
 }());

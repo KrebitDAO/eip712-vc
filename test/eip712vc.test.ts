@@ -11,6 +11,10 @@ import {
   DEFAULT_VC_TYPE,
   EIP712MessageTypes,
   getKrebitCredentialTypes,
+  SignTypedData,
+  VerifyTypedData,
+  W3CCredential,
+  W3CCredentialTypedData,
 } from '../src/eip712vc'
 
 describe('attest', () => {
@@ -93,11 +97,15 @@ describe('attest', () => {
     //console.log(vc)
 
     expect(
-      eip712vc.verifyEIP712Credential(
+      await eip712vc.verifyEIP712Credential(
         await wallet.getAddress(),
         credential,
         credentialSubjectTypes,
-        vc.proof.proofValue
+        vc.proof.proofValue,
+        async (data: TypedMessage<EIP712MessageTypes>, proofValue: string) => {
+          // Replace this fuction with your own signing code
+          return recoverTypedSignature_v4({ data, sig: proofValue })
+        }
       )
     ).toBeTruthy()
   })
@@ -153,7 +161,16 @@ describe('attest', () => {
     //console.log(vc)
 
     expect(
-      eip712vc.verifyEIP712Credential(await wallet.getAddress(), credential, krebitTypes, vc.proof.proofValue)
+      await eip712vc.verifyEIP712Credential(
+        await wallet.getAddress(),
+        credential,
+        krebitTypes,
+        vc.proof.proofValue,
+        async (data: TypedMessage<EIP712MessageTypes>, proofValue: string) => {
+          // Replace this fuction with your own signing code
+          return recoverTypedSignature_v4({ data, sig: proofValue })
+        }
+      )
     ).toBeTruthy()
   })
 
@@ -223,7 +240,16 @@ describe('attest', () => {
     //console.log(vc)
 
     expect(
-      eip712vc.verifyW3CCredential(await wallet.getAddress(), credential, credentialSubjectTypes, vc.proof.proofValue)
+      await eip712vc.verifyW3CCredential(
+        await wallet.getAddress(),
+        credential,
+        credentialSubjectTypes,
+        vc.proof.proofValue,
+        async (data: TypedMessage<EIP712MessageTypes>, proofValue: string) => {
+          // Replace this fuction with your own signing code
+          return recoverTypedSignature_v4({ data, sig: proofValue })
+        }
+      )
     ).toBeTruthy()
   })
 })

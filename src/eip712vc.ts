@@ -2,8 +2,6 @@ import { utils } from 'ethers'
 
 const { keccak256, getAddress, toUtf8Bytes, defaultAbiCoder } = utils
 
-import { TypedMessage, recoverTypedSignature_v4 } from 'eth-sig-util'
-
 import {
   DOMAIN_ENCODING,
   EIP712Config,
@@ -14,25 +12,19 @@ import {
   CREDENTIAL_SCHEMA_EIP712_TYPE,
   VERIFIABLE_CREDENTIAL_W3C_TYPE,
   CREDENTIAL_SCHEMA_W3C_TYPE,
-  //PROOF_EIP712_TYPE,
+  W3CCredential,
+  CredentialPayload,
+  VerifiableCredential,
   EIP712CredentialTypedData,
   EIP712MessageTypes,
   EIP712Credential,
   EIP712VerifiableCredential,
   W3CCredentialTypedData,
   SignTypedData,
+  VerifyTypedData,
   EIP712TypedData,
+  Proof,
 } from './types'
-
-import {
-  CredentialPayload,
-  PresentationPayload,
-  VerifiableCredential,
-  W3CCredential,
-  W3CPresentation,
-  Verifiable,
-} from 'did-jwt-vc'
-import { Proof } from 'did-jwt-vc/lib/types'
 
 export {
   EIP712Config,
@@ -40,12 +32,12 @@ export {
   EIP712CredentialTypedData,
   EIP712TypedData,
   CredentialPayload,
-  PresentationPayload,
   VerifiableCredential,
   EIP712VerifiableCredential,
-  Verifiable,
   W3CCredential,
-  W3CPresentation,
+  W3CCredentialTypedData,
+  SignTypedData,
+  VerifyTypedData,
 }
 
 export const DEFAULT_CONTEXT = 'https://www.w3.org/2018/credentials/v1'
@@ -153,17 +145,15 @@ export class EIP712VC {
     }
   }
 
-  public verifyW3CCredential(
+  public async verifyW3CCredential(
     issuer: string,
     credential: W3CCredential,
     credentialSubjectTypes: any,
-    proofValue: string
-  ): boolean {
-    let data: TypedMessage<EIP712MessageTypes> = this.getW3CCredentialTypedData(credential, credentialSubjectTypes)
-    const recoveredAddress = recoverTypedSignature_v4({
-      data,
-      sig: proofValue,
-    })
+    proofValue: string,
+    verifyTypedData: VerifyTypedData<EIP712MessageTypes>
+  ): Promise<boolean> {
+    let data: W3CCredentialTypedData = this.getW3CCredentialTypedData(credential, credentialSubjectTypes)
+    const recoveredAddress = await verifyTypedData(data, proofValue)
 
     return getAddress(issuer) === getAddress(recoveredAddress)
   }
@@ -237,18 +227,15 @@ export class EIP712VC {
     }
   }
 
-  public verifyEIP712Credential(
+  public async verifyEIP712Credential(
     issuer: string,
     credential: EIP712Credential,
     credentialSubjectTypes: any,
-    proofValue: string
-  ): boolean {
-    let data: TypedMessage<EIP712MessageTypes> = this.getEIP712CredentialTypedData(credential, credentialSubjectTypes)
-
-    const recoveredAddress = recoverTypedSignature_v4({
-      data,
-      sig: proofValue,
-    })
+    proofValue: string,
+    verifyTypedData: VerifyTypedData<EIP712MessageTypes>
+  ): Promise<boolean> {
+    let data: EIP712CredentialTypedData = this.getEIP712CredentialTypedData(credential, credentialSubjectTypes)
+    const recoveredAddress = await verifyTypedData(data, proofValue)
 
     return getAddress(issuer) === getAddress(recoveredAddress)
   }

@@ -1,4 +1,3 @@
-import { W3CCredential } from 'did-jwt-vc';
 export declare const DOMAIN_ENCODING = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 export interface EIP712Config {
     name: string;
@@ -36,6 +35,57 @@ export declare type IssuerType = Extensible<{
     id: string;
 }>;
 export declare type DateType = string | Date;
+export interface CredentialStatus {
+    id: string;
+    type: string;
+}
+/**
+ * used as input when creating Verifiable Credentials
+ */
+interface FixedCredentialPayload {
+    '@context': string | string[];
+    id?: string;
+    type: string | string[];
+    issuer: IssuerType;
+    issuanceDate: DateType;
+    expirationDate?: DateType;
+    credentialSubject: Extensible<{
+        id?: string;
+    }>;
+    credentialStatus?: CredentialStatus;
+    evidence?: any;
+    termsOfUse?: any;
+}
+/**
+ * A more flexible representation of a {@link W3CCredential} that can be used as input to methods
+ * that expect it.
+ */
+export declare type CredentialPayload = Extensible<FixedCredentialPayload>;
+/**
+ * This is meant to reflect unambiguous types for the properties in `CredentialPayload`
+ */
+interface NarrowCredentialDefinitions {
+    '@context': string[];
+    type: string[];
+    issuer: Exclude<IssuerType, string>;
+    issuanceDate: string;
+    expirationDate?: string;
+}
+/**
+ * Replaces the matching property types of T with the ones in U
+ */
+declare type Replace<T, U> = Omit<T, keyof U> & U;
+/**
+ * This data type represents a parsed VerifiableCredential.
+ * It is meant to be an unambiguous representation of the properties of a Credential and is usually the result of a transformation method.
+ *
+ * `issuer` is always an object with an `id` property and potentially other app specific issuer claims
+ * `issuanceDate` is an ISO DateTime string
+ * `expirationDate`, is a nullable ISO DateTime string
+ *
+ * Any JWT specific properties are transformed to the broader W3C variant and any app specific properties are left intact
+ */
+export declare type W3CCredential = Extensible<Replace<FixedCredentialPayload, NarrowCredentialDefinitions>>;
 export interface CredentialSchema {
     id: string;
     _type: string;
@@ -65,6 +115,7 @@ export declare type Verifiable<T> = Readonly<T> & {
     readonly proof: Proof;
 };
 export declare type EIP712VerifiableCredential = Verifiable<EIP712Credential>;
+export declare type VerifiableCredential = Verifiable<W3CCredential>;
 export interface EIP712CredentialMessageTypes extends EIP712MessageTypes {
     VerifiableCredential: typeof VERIFIABLE_CREDENTIAL_EIP712_TYPE;
     Issuer: any;
@@ -92,4 +143,5 @@ export declare const CREDENTIAL_SCHEMA_W3C_TYPE: TypedData[];
 export declare const VERIFIABLE_CREDENTIAL_W3C_TYPE: TypedData[];
 export declare const PROOF_W3C_TYPE: TypedData[];
 export declare type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>;
+export declare type VerifyTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>, proofValue: string) => Promise<string>;
 export {};
