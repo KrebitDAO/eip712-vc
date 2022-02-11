@@ -58,6 +58,7 @@ export function getKrebitCredentialTypes(): any {
       { name: 'encrypted', type: 'string' },
       { name: 'trust', type: 'uint8' },
       { name: 'stake', type: 'uint256' },
+      { name: 'price', type: 'uint256' },
       { name: 'nbf', type: 'uint256' },
       { name: 'exp', type: 'uint256' },
     ],
