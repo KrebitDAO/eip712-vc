@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EIP712VC = exports.getKrebitCredentialTypes = exports.DEFAULT_VC_TYPE = exports.EIP712_CONTEXT = exports.DEFAULT_CONTEXT = void 0;
+exports.EIP712VC = exports.getEIP712Credential = exports.getKrebitCredentialTypes = exports.DEFAULT_VC_TYPE = exports.EIP712_CONTEXT = exports.DEFAULT_CONTEXT = void 0;
 var tslib_1 = require("tslib");
 var ethers_1 = require("ethers");
 var keccak256 = ethers_1.utils.keccak256, getAddress = ethers_1.utils.getAddress, toUtf8Bytes = ethers_1.utils.toUtf8Bytes, defaultAbiCoder = ethers_1.utils.defaultAbiCoder;
@@ -32,6 +32,31 @@ function getKrebitCredentialTypes() {
     };
 }
 exports.getKrebitCredentialTypes = getKrebitCredentialTypes;
+var renameType = function (obj) {
+    var keyValues = Object.keys(obj).map(function (key) {
+        var _a, _b;
+        if (key === 'type') {
+            return _a = {}, _a['_type'] = obj[key], _a;
+        }
+        else {
+            return _b = {}, _b[key] = obj[key], _b;
+        }
+    });
+    return Object.assign.apply(Object, (0, tslib_1.__spreadArray)([{}], keyValues, false));
+};
+function getEIP712Credential(credential) {
+    return {
+        _context: JSON.stringify(credential['@context']),
+        _type: JSON.stringify(credential.type),
+        id: credential.id,
+        issuer: credential.issuer,
+        credentialSubject: renameType(credential.credentialSubject),
+        credentialSchema: renameType(credential.credentialSchema),
+        issuanceDate: credential.issuanceDate,
+        expirationDate: credential.expirationDate,
+    };
+}
+exports.getEIP712Credential = getEIP712Credential;
 var EIP712VC = /** @class */ (function () {
     function EIP712VC(eip712Config) {
         this.eip712Config = eip712Config;

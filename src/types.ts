@@ -73,7 +73,7 @@ export interface CredentialStatus {
  */
 interface FixedCredentialPayload {
   '@context': string | string[]
-  id?: string
+  id: string
   type: string | string[]
   issuer: IssuerType
   issuanceDate: DateType

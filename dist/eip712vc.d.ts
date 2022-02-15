@@ -4,6 +4,7 @@ export declare const DEFAULT_CONTEXT = "https://www.w3.org/2018/credentials/v1";
 export declare const EIP712_CONTEXT = "https://raw.githubusercontent.com/w3c-ccg/ethereum-eip712-signature-2021-spec/main/contexts/v1/index.json";
 export declare const DEFAULT_VC_TYPE = "VerifiableCredential";
 export declare function getKrebitCredentialTypes(): any;
+export declare function getEIP712Credential(credential: W3CCredential): EIP712Credential;
 export declare class EIP712VC {
     private eip712Config;
     constructor(eip712Config: EIP712Config);

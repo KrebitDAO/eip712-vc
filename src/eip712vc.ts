@@ -69,6 +69,30 @@ export function getKrebitCredentialTypes(): any {
   }
 }
 
+const renameType = (obj: { id?: string | undefined } & { [x: string]: any }) => {
+  const keyValues = Object.keys(obj).map((key) => {
+    if (key === 'type') {
+      return { ['_type']: obj[key] }
+    } else {
+      return { [key]: obj[key] }
+    }
+  })
+  return Object.assign({}, ...keyValues)
+}
+
+export function getEIP712Credential(credential: W3CCredential): EIP712Credential {
+  return {
+    _context: JSON.stringify(credential['@context']),
+    _type: JSON.stringify(credential.type),
+    id: credential.id,
+    issuer: credential.issuer,
+    credentialSubject: renameType(credential.credentialSubject),
+    credentialSchema: renameType(credential.credentialSchema),
+    issuanceDate: credential.issuanceDate,
+    expirationDate: credential.expirationDate,
+  }
+}
+
 export class EIP712VC {
   private eip712Config: EIP712Config
 
