@@ -224,7 +224,7 @@ describe('attest', () => {
       },
     }
 
-    //console.log(credential)
+    console.log(credential)
 
     const wallet = Wallet.createRandom()
 
@@ -237,7 +237,7 @@ describe('attest', () => {
       }
     )
 
-    //console.log(vc)
+    console.log(vc)
 
     expect(
       await eip712vc.verifyW3CCredential(
@@ -307,10 +307,8 @@ describe('attest', () => {
       expirationDate: new Date(expirationDate).toISOString(),
     }
 
-    //console.log(credential)
-
     let eip712Credential = getEIP712Credential(credential)
-
+    console.log(eip712Credential)
     const wallet = Wallet.createRandom()
 
     const vc: EIP712VerifiableCredential = await eip712vc.createEIP712VerifiableCredential(

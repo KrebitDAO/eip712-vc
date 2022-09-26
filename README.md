@@ -2,11 +2,11 @@
 
 # <img src="krebit-icon.png" alt="Krebit" height="40px" align="left"> Krebit EIP712 Verifiable Credentials SDK
 
-[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.krebit.co)
+[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.krebit.id)
 
 This repository hosts the [Krebit] EIP712-VC tools, based on [W3C Ethereum EIP712 Signature 2021 Draft].
 
-[krebit]: http://krebit.co
+[krebit]: http://krebit.id
 [w3c ethereum eip712 signature 2021 draft]: https://w3c-ccg.github.io/ethereum-eip712-signature-2021-spec
 
 It provides functions for creating both W3C compliant Verifiable Credentials, and also a Solidity compatible version that can be used in contracts like [krebit-contracts].
@@ -31,6 +31,7 @@ import {
   DEFAULT_CONTEXT,
   EIP712_CONTEXT,
   DEFAULT_VC_TYPE,
+  getEIP712Credential,
 } from '@krebitdao/eip721-vc'
 
 let eip712vc = new EIP712VC({
@@ -110,12 +111,6 @@ const vc: VerifiableCredential = await eip712vc.createW3CVerifiableCredential(
 )
 ```
 
-#### Verifying
-
-```javascript
-eip712vc.verifyW3CCredential(await wallet.getAddress(), credential, credentialSubjectTypes, vc.proof.proofValue)
-```
-
 ### Creating Solidity Compatible EIP712 Verifiable Credentials
 
 #### Creating
@@ -148,8 +143,8 @@ let credentialSubjectTypes = {
 }
 
 let credential = {
-  _context: [DEFAULT_CONTEXT, EIP712_CONTEXT].join(','),
-  _type: [DEFAULT_VC_TYPE].join(','),
+  '@context': [DEFAULT_CONTEXT, EIP712_CONTEXT],
+  type: [DEFAULT_VC_TYPE],
   id: 'https://example.org/person/1234',
   issuer: {
     id: 'did:issuer',
@@ -158,7 +153,7 @@ let credential = {
   credentialSubject: {
     id: 'did:user',
     ethereumAddress: 'acc1',
-    _type: 'fullName',
+    type: 'fullName',
     typeSchema: 'ceramic://def',
     value: 'encrypted',
     encrypted: '0x0c94bf56745f8d3d9d49b77b345c780a0c11ea997229f925f39a1946d51856fb',
@@ -169,26 +164,22 @@ let credential = {
   },
   credentialSchema: {
     id: 'https://example.com/schemas/v1',
-    _type: 'Eip712SchemaValidator2021',
+    type: 'Eip712SchemaValidator2021',
   },
   issuanceDate: new Date(issuanceDate).toISOString(),
   expirationDate: new Date(expirationDate).toISOString(),
 }
 
+let eip712Credential = getEIP712Credential(credential)
+
 const vc: EIP712VerifiableCredential = await eip712vc.createEIP712VerifiableCredential(
-  credential,
+  eip712Credential,
   credentialSubjectTypes,
   async (data: TypedMessage<EIP712MessageTypes>) => {
     // Replace this fuction with your own signing code
     return signTypedData_v4(Buffer.from(wallet._signingKey().privateKey.slice(2), 'hex'), { data })
   }
 )
-```
-
-#### Verifying
-
-```javascript
-eip712vc.verifyEIP712Credential(await wallet.getAddress(), credential, credentialSubjectTypes, vc.proof.proofValue)
 ```
 
 ### Creating Krebit Compatible EIP712 Verifiable Credentials
@@ -203,8 +194,8 @@ let expirationDate = new Date()
 expirationDate.setFullYear(expirationDate.getFullYear() + 3)
 
 let credential = {
-  _context: [DEFAULT_CONTEXT, EIP712_CONTEXT].join(','),
-  _type: [DEFAULT_VC_TYPE].join(','),
+  '@context': [DEFAULT_CONTEXT, EIP712_CONTEXT],
+  type: [DEFAULT_VC_TYPE],
   id: 'https://example.org/person/1234',
   issuer: {
     id: 'did:issuer',
@@ -213,7 +204,7 @@ let credential = {
   credentialSubject: {
     id: 'did:user',
     ethereumAddress: 'acc1',
-    _type: 'fullName',
+    type: 'fullName',
     typeSchema: 'ceramic://def',
     value: 'encrypted',
     encrypted: '0x0c94bf56745f8d3d9d49b77b345c780a0c11ea997229f925f39a1946d51856fb',
@@ -224,15 +215,17 @@ let credential = {
   },
   credentialSchema: {
     id: 'https://example.com/schemas/v1',
-    _type: 'Eip712SchemaValidator2021',
+    type: 'Eip712SchemaValidator2021',
   },
   issuanceDate: new Date(issuanceDate).toISOString(),
   expirationDate: new Date(expirationDate).toISOString(),
 }
 
+let eip712Credential = getEIP712Credential(credential)
+
 let krebitTypes = getKrebitCredentialTypes()
 
-const vc = await eip712vc.createEIP712VerifiableCredential(credential, krebitTypes, async (data) => {
+const vc = await eip712vc.createEIP712VerifiableCredential(eip712Credential, krebitTypes, async (data) => {
   // Replace this fuction with your own signing code
   return await issuerSigner._signTypedData(
     {
@@ -247,10 +240,19 @@ const vc = await eip712vc.createEIP712VerifiableCredential(credential, krebitTyp
 })
 ```
 
-#### Verifying
+### Verifying
 
 ```javascript
-eip712vc.verifyEIP712Credential(issuerAddress, credential, krebitTypes, vc.proof.proofValue)
+eip712vc.verifyEIP712Credential(
+  issuerAddress,
+  eip712Credential,
+  krebitTypes,
+  vc.proof.proofValue,
+  async (data: TypedMessage<EIP712MessageTypes>, proofValue: string) => {
+    // Replace this fuction with your own signing code
+    return recoverTypedSignature_v4({ data, sig: proofValue })
+  }
+)
 ```
 
 ## Learn More
