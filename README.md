@@ -18,7 +18,7 @@ It provides functions for creating both W3C compliant Verifiable Credentials, an
 ### Installation
 
 ```console
-$ npm install -s @krebitdao/eip721-vc
+$ npm install -s @krebitdao/eip712-vc
 ```
 
 ### Configuring the EIP712 Domain
@@ -32,7 +32,7 @@ import {
   EIP712_CONTEXT,
   DEFAULT_VC_TYPE,
   getEIP712Credential,
-} from '@krebitdao/eip721-vc'
+} from '@krebitdao/eip712-vc'
 
 let eip712vc = new EIP712VC({
   name: 'Krebit',
@@ -187,7 +187,7 @@ const vc: EIP712VerifiableCredential = await eip712vc.createEIP712VerifiableCred
 #### Creating
 
 ```javascript
-import { getKrebitCredentialTypes } from '@krebitdao/eip721-vc'
+import { getKrebitCredentialTypes } from '@krebitdao/eip712-vc'
 
 let issuanceDate = Date.now()
 let expirationDate = new Date()
